@@ -1,0 +1,14 @@
+[package]
+name = "qp_example0"
+version = "0.1.0"
+authors = ["Rodrigo Alvite Romano <rovite@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+osqp = "0.6.2"
+# osqp-sys = { version = "0.6.2"}
+
+[build-dependencies]
+# cmake = "0.1"
