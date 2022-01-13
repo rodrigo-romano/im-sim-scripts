@@ -1,5 +1,5 @@
 [package]
-name = "aco_impl_ex1"
+name = "qp_crate_example"
 version = "0.1.0"
 authors = ["Rodrigo Alvite Romano <rovite@gmail.com>"]
 edition = "2018"
@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.125", features = ["derive"] }
-serde-pickle = "0.6.2"
-nalgebra = "0.26.1"
-#nalgebra-sparse = "0.2"
 osqp = "0.6.2"
+# osqp-sys = { version = "0.6.2"}
+
+[build-dependencies]
+# cmake = "0.1"
