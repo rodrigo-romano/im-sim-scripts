@@ -22,7 +22,7 @@ const M1_RBM: usize = 41;
 const M2_RBM: usize = 41;
 const I_M1_S7_RZ: usize = M1_RBM;
 const I_M2_S7_RZ: usize = M1_RBM + M2_RBM;
-const N_LOOP: usize = 8;
+const N_LOOP: usize = 10;//1;
 
 
 fn main() -> Result<(),()> {
@@ -31,30 +31,23 @@ fn main() -> Result<(),()> {
 
     // Active optics control algorithm
     let mut aco = QP::<M1_RBM, M2_RBM, 27, N_MODE>::new(
-        "../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
+        //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
+        "rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")
         .unwrap()
         .build();
   
     // Get AcO interaction matrix (Dmatrix: ns x nc)
     let d_wfs = aco.get_d_wfs();
-    
-    //let filename = File::open("../aco_poke.pkl").unwrap();
-    //let _buf: Vec<f64> = pkl::from_reader(
-    //    filename,pkl::de::DeOptions::new()).unwrap();
-
-    //let file = File::open("aco_poke.pkl")?;
-    //let rdr = BufReader::with_capacity(10_000, file);
-    //let Drust: Self = pickle::from_reader(rdr, Default::default())?;
 
     // Misalignment & Figure error
     let mut m1_rbm_buf = vec![vec![0f64; 6]; 7];
-    m1_rbm_buf[0][0] = 1.1e-6; // M1S1-Tx: 
-    m1_rbm_buf[1][1] = 1.2e-6; // M1S2-Ty:
-    m1_rbm_buf[2][3] = 1.4e-6; // M1S3-Rx:
-    m1_rbm_buf[3][4] = 1.5e-6; // M1S4-Ry: 
-    m1_rbm_buf[4][2] = 1.6e-6; // M1S5-Tz:
-    m1_rbm_buf[5][5] = 1.3e-6; // M1S5-Rz: 
-    m1_rbm_buf[6][5] = 2e-6; // M1S7-Rz: 
+    m1_rbm_buf[0][0] = 0. * 1.1e-6; // M1S1-Tx: 
+    m1_rbm_buf[1][1] = 0. * 1.2e-6; // M1S2-Ty:
+    m1_rbm_buf[2][3] = 0. * 1.4e-6; // M1S3-Rx:
+    m1_rbm_buf[3][4] = 0. * 1.5e-6; // M1S4-Ry: 
+    m1_rbm_buf[4][2] = 0. * 1.6e-6; // M1S5-Tz:
+    m1_rbm_buf[5][5] = 0. * 1.3e-6; // M1S5-Rz: 
+    m1_rbm_buf[6][5] = 0. * 2e-6; // M1S7-Rz: 
     let m1_rbm = m1_rbm_buf.into_iter().flatten().collect::<Vec<f64>>();
     let mut m2_rbm_buf = vec![0f64; 42];
     m2_rbm_buf[M2_RBM] = 0. * 3e-4; // M2S7-Rz
@@ -99,6 +92,18 @@ fn main() -> Result<(),()> {
         let m1_rbm_cmd = sol_aco.pop().map(|x| vec![x]).unwrap();
         let u_m1rbm = Option::<Vec<f64>>::from(&m1_rbm_cmd[ios!(M1RBMcmd)]).unwrap();
         
+        u_m1rbm.chunks(6).enumerate().for_each(|(_sid, rbm)| {
+            //println!("M1S{}:", sid + 1);
+            let (t_xyz, r_xyz) = rbm.split_at(3);
+            //t_xyz.iter().for_each(|x| print!("{},", x));
+            //r_xyz.iter().for_each(|x| print!("{},", x));
+            
+            let tn = t_xyz.iter().map(|x| x * x).sum::<f64>().sqrt();
+            let rn = r_xyz.iter().map(|x| x * x).sum::<f64>().sqrt();
+            print!(" {:6.3}, {:6.3}\t", 1e6 * tn, 1e6 * rn);
+        });
+        println!(" ");
+        
         let m1s1bm = Option::<Vec<f64>>::from(&sol_aco[ios!(M1S1BMcmd)]).unwrap();
         let m1s2bm = Option::<Vec<f64>>::from(&sol_aco[ios!(M1S2BMcmd)]).unwrap();
         let m1s3bm = Option::<Vec<f64>>::from(&sol_aco[ios!(M1S3BMcmd)]).unwrap();
@@ -110,10 +115,11 @@ fn main() -> Result<(),()> {
         u = [u_m1rbm,u_m2rbm,
             m1s1bm,m1s2bm,m1s3bm,m1s4bm,m1s5bm,m1s6bm,m1s7bm].concat();
 
+        // Print AcO output   
         println!("Iter {} of {} -> AcO output: {:1.2?}\n",
             k_+1, N_LOOP,
             u.iter().map(|x| 1e6 * x).collect::<Vec<f64>>());
-
+        
     }
 
     println!("Optical DOF static disturbance: {:?}",

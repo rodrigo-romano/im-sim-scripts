@@ -1,3 +1,4 @@
-aco_impl_ex1/__pycache__
 */target
 Cargo.lock
+aco_loop_example/*.pkl
+aco_loop_example/*.pickle
