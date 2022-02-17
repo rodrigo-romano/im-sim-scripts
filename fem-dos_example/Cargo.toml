@@ -1,0 +1,13 @@
+[package]
+name = "fem-dos_example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# m1-ctrl = "0.1.0"
+mount-ctrl = "0.1.0"
+fem = { version = "0.1.1", features = ["dos"], package = "gmt-fem" }
+dosio = "0.1.2"
+serde-pickle = "0.6.2"
